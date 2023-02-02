@@ -2,6 +2,10 @@
 
 use std::{env::VarError, str::FromStr};
 
+pub mod custom;
+
+pub use custom::Custom;
+
 /// Error from reading the env var.
 #[derive(Debug, thiserror::Error)]
 #[error("error reading {key} env var: {reason}")]
