@@ -103,7 +103,7 @@ where
 pub fn or<T>(key: &'static str, default: T) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
-    <T as FromStr>::Err: std::error::Error,
+    <T as FromStr>::Err: std::fmt::Display,
 {
     let val = maybe(key)?;
     Ok(val.unwrap_or(default))
@@ -115,7 +115,7 @@ where
 pub fn or_else<T, F>(key: &'static str, default: F) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
-    <T as FromStr>::Err: std::error::Error,
+    <T as FromStr>::Err: std::fmt::Display,
     F: FnOnce() -> T,
 {
     let val = maybe(key)?;
@@ -133,7 +133,7 @@ pub fn or_parse<T>(
 ) -> Result<T, Error<OrParseError<T::Err>>>
 where
     T: FromStr,
-    <T as FromStr>::Err: std::error::Error,
+    <T as FromStr>::Err: std::fmt::Display,
 {
     let val = maybe(key).map_err(|err| err.map_reason(OrParseError::Value))?;
     if let Some(val) = val {
