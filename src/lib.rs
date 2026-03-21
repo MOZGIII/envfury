@@ -8,6 +8,7 @@ use std::{env::VarError, str::FromStr};
 pub struct Error<T> {
     /// The envirobment variable name.
     pub key: &'static str,
+
     /// The reason for the error.
     #[source]
     pub reason: T,
@@ -32,35 +33,38 @@ impl<T> Error<T> {
 
 /// Error while processing the value.
 #[derive(Debug, thiserror::Error)]
-pub enum ValueError<T> {
+pub enum ValueError<ParseError> {
     /// The value was not a valid unicode.
     #[error("value is not a valid unicode")]
     NonUnicode,
+
     /// The value could not be parsed from a string.
     #[error("unable to parse: {0}")]
-    Parse(#[source] T),
+    Parse(#[source] ParseError),
 }
 
 /// Error while processing a required variable.
 #[derive(Debug, thiserror::Error)]
-pub enum MustError<T> {
+pub enum MustError<ParseError> {
     /// The variable was not set.
     #[error("not set")]
     NotSet,
+
     /// The value couldn't be processed.
     #[error(transparent)]
-    Value(ValueError<T>),
+    Value(ValueError<ParseError>),
 }
 
 /// Error while processing a variable or parsing it's default.
 #[derive(Debug, thiserror::Error)]
-pub enum OrParseError<T> {
+pub enum OrParseError<ParseError> {
     /// The value couldn't be processed.
     #[error(transparent)]
-    Value(ValueError<T>),
+    Value(ValueError<ParseError>),
+
     /// The default could not be properly parsed.
     #[error("unable to parse the default value while the variable was not set: {0}")]
-    ParseDefault(T),
+    ParseDefault(ParseError),
 }
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
