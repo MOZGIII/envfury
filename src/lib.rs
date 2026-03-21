@@ -123,6 +123,19 @@ where
 }
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
+/// If the variable is not set - returns a newly constructed value via the [`Default`] trait.
+/// Returns an error if the value is an invalid unicode or if the value could not be parsed.
+pub fn or_default<T>(key: &'static str) -> Result<T, Error<ValueError<T::Err>>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Display,
+    T: Default,
+{
+    let val = maybe(key)?;
+    Ok(val.unwrap_or_default())
+}
+
+/// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns the `default` argument.
 /// Returns an error if the value is an invalid unicode or if the value could not be parsed.
 pub fn or<T>(key: &'static str, default: T) -> Result<T, Error<ValueError<T::Err>>>
