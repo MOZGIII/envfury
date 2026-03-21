@@ -67,6 +67,27 @@ pub enum OrParseError<ParseError> {
     ParseDefault(ParseError),
 }
 
+/// Error while processing a variable or executing a fallible else.
+#[derive(Debug, thiserror::Error)]
+pub enum OrElseTryError<ParseError, ElseError> {
+    /// The value couldn't be processed.
+    #[error(transparent)]
+    Value(ValueError<ParseError>),
+
+    /// The `else` handler failed.
+    #[error("the absent value handler failed: {0}")]
+    Else(#[source] ElseError),
+}
+
+impl<ParseError> From<OrParseError<ParseError>> for OrElseTryError<ParseError, ParseError> {
+    fn from(value: OrParseError<ParseError>) -> Self {
+        match value {
+            OrParseError::Value(value_error) => OrElseTryError::Value(value_error),
+            OrParseError::ParseDefault(parse_error) => OrElseTryError::Else(parse_error),
+        }
+    }
+}
+
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns [`None`].
 /// Returns an error if the value is an invalid unicode or if the value could not be parsed.
@@ -136,6 +157,24 @@ where
 {
     let val = maybe(key)?;
     Ok(val.unwrap_or_else(f))
+}
+
+/// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
+/// If the variable is not set - returns the `Ok`-result of calling the `f` argument.
+/// Returns an error if the value is an invalid unicode, if the value could not be parsed or if
+/// calling the `f` resulted in error.
+pub fn or_else_try<T, E, F>(key: &'static str, f: F) -> Result<T, Error<OrElseTryError<T::Err, E>>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Display,
+    F: FnOnce() -> Result<T, E>,
+{
+    let val = maybe(key).map_err(|err| err.map_reason(OrElseTryError::Value))?;
+    if let Some(val) = val {
+        return Ok(val);
+    }
+    let val = f().map_err(|err| Error::new(key, OrElseTryError::Else(err)))?;
+    Ok(val)
 }
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
