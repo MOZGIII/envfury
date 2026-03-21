@@ -126,16 +126,16 @@ where
 }
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
-/// If the variable is not set - returns the result of calling the `default` argument.
+/// If the variable is not set - returns the result of calling the `f` argument.
 /// Returns an error if the value is an invalid unicode or if the value could not be parsed.
-pub fn or_else<T, F>(key: &'static str, default: F) -> Result<T, Error<ValueError<T::Err>>>
+pub fn or_else<T, F>(key: &'static str, f: F) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
     <T as FromStr>::Err: std::fmt::Display,
     F: FnOnce() -> T,
 {
     let val = maybe(key)?;
-    Ok(val.unwrap_or_else(default))
+    Ok(val.unwrap_or_else(f))
 }
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
