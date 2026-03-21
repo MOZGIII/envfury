@@ -90,7 +90,7 @@ impl<ParseError> From<OrParseError<ParseError>> for OrElseTryError<ParseError, P
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns [`None`].
-/// Returns an error if the value is an invalid unicode or if the value could not be parsed.
+/// Returns an error if the value is invalid Unicode or if the value could not be parsed.
 pub fn maybe<T>(key: &'static str) -> Result<Option<T>, Error<ValueError<T::Err>>>
 where
     T: std::str::FromStr,
@@ -108,7 +108,7 @@ where
 }
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
-/// Returns an error if the value is not set, is an invalid unicode or if the value could not
+/// Returns an error if the value is not set, is invalid Unicode or if the value could not
 /// be parsed.
 pub fn must<T>(key: &'static str) -> Result<T, Error<MustError<T::Err>>>
 where
@@ -124,7 +124,7 @@ where
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns a newly constructed value via the [`Default`] trait.
-/// Returns an error if the value is an invalid unicode or if the value could not be parsed.
+/// Returns an error if the value is invalid Unicode or if the value could not be parsed.
 pub fn or_default<T>(key: &'static str) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
@@ -137,7 +137,7 @@ where
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns the `default` argument.
-/// Returns an error if the value is an invalid unicode or if the value could not be parsed.
+/// Returns an error if the value is invalid Unicode or if the value could not be parsed.
 pub fn or<T>(key: &'static str, default: T) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
@@ -149,7 +149,7 @@ where
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns the result of calling `.into()` on the `default` argument.
-/// Returns an error if the value is an invalid unicode or if the value could not be parsed.
+/// Returns an error if the value is invalid Unicode or if the value could not be parsed.
 pub fn or_into<T>(key: &'static str, default: impl Into<T>) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
@@ -161,7 +161,7 @@ where
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns the result of calling the `f` argument.
-/// Returns an error if the value is an invalid unicode or if the value could not be parsed.
+/// Returns an error if the value is invalid Unicode or if the value could not be parsed.
 pub fn or_else<T, F>(key: &'static str, f: F) -> Result<T, Error<ValueError<T::Err>>>
 where
     T: FromStr,
@@ -174,8 +174,8 @@ where
 
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns the `Ok`-result of calling the `f` argument.
-/// Returns an error if the value is an invalid unicode, if the value could not be parsed or if
-/// calling the `f` resulted in error.
+/// Returns an error if the variable value is invalid Unicode, if the value could not be parsed,
+/// or if calling `f` resulted in an error.
 pub fn or_else_try<T, E, F>(key: &'static str, f: F) -> Result<T, Error<OrElseTryError<T::Err, E>>>
 where
     T: FromStr,
@@ -193,8 +193,8 @@ where
 /// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
 /// If the variable is not set - returns the result of calling the `default` and parsing the default
 /// argument.
-/// Returns an error if the variable value is an invalid unicode or if the value could not be
-/// parsed, or if the default could not be parsed.
+/// Returns an error if the variable value is invalid Unicode, if the value could not be parsed,
+/// or if the `default` could not be parsed.
 pub fn or_parse<T>(
     key: &'static str,
     default: impl Into<String>,
