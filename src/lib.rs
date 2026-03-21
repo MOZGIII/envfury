@@ -79,6 +79,18 @@ pub enum OrElseTryError<ParseError, ElseError> {
     Else(#[source] ElseError),
 }
 
+/// Error while processing a variable or executing a [`TryInto::try_into`].
+#[derive(Debug, thiserror::Error)]
+pub enum OrTryIntoError<ParseError, TryIntoError> {
+    /// The value couldn't be processed.
+    #[error(transparent)]
+    Value(ValueError<ParseError>),
+
+    /// The default could not be properly converted.
+    #[error("unable to convert the default value while the variable was not set: {0}")]
+    TryInto(#[source] TryIntoError),
+}
+
 impl<ParseError> From<OrParseError<ParseError>> for OrElseTryError<ParseError, ParseError> {
     fn from(value: OrParseError<ParseError>) -> Self {
         match value {
@@ -211,5 +223,34 @@ where
         .into()
         .parse()
         .map_err(|err| Error::new(key, OrParseError::ParseDefault(err)))?;
+    Ok(val)
+}
+
+/// Get the value of environment variable `key` and parse it into the type `T` if variable is set.
+/// If the variable is not set - returns the `Ok`-result of calling `.try_into()` on the `default`
+/// argument.
+/// Returns an error if the variable value is invalid Unicode, if the value could not be parsed,
+/// or if the `default` could not be parsed.
+#[allow(
+    clippy::type_complexity,
+    reason = "Not much to simplify here, only type aliases are available to our disposal - \
+              but they're not too useful here."
+)]
+pub fn or_try_into<T, D>(
+    key: &'static str,
+    default: D,
+) -> Result<T, Error<OrTryIntoError<T::Err, D::Error>>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: std::fmt::Display,
+    D: TryInto<T>,
+{
+    let val = maybe(key).map_err(|err| err.map_reason(OrTryIntoError::Value))?;
+    if let Some(val) = val {
+        return Ok(val);
+    }
+    let val = default
+        .try_into()
+        .map_err(|err| Error::new(key, OrTryIntoError::TryInto(err)))?;
     Ok(val)
 }
