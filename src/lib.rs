@@ -291,3 +291,6 @@ where
     let val = val.parse().map_err(ValueError::Parse)?;
     Ok(Some(val))
 }
+
+#[cfg(test)]
+mod tests;
